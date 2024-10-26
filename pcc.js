@@ -60,6 +60,7 @@ const EMAIL_VALUE = 'john.doe@example.com';
     const steps = [
       {
         selector: 'div[elname="uploadActionDiv"]', action: async (context) => {
+          await new Promise(resolve => setTimeout(resolve, 200)); // Wait for 300 milliseconds
           const [fileChooser] = await Promise.all([
             context.waitForFileChooser(),
             context.click('div[elname="uploadActionDiv"]'),
