@@ -1,15 +1,13 @@
 const puppeteer = require('puppeteer-core');
 const axios = require('axios');
-const path = require('path');
 const { addExtra } = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const submitForm = require('./helperFunction').submitForm;
 const solveCaptcha = require('./helperFunction').solveCaptcha;
-const pccWebsiteUrl = "https://forms.zohopublic.eu/EoILisbon/form/FREEAppointmentforPCCServiceatEoILisbon";
+const passportWebsiteUrl = "https://forms.zohopublic.eu/EoILisbon/form/FREEAppointmentforPassportServiceatEoILisbon";
 
 // Define constant variables for values
-const IMAGE_PATH = path.join(__dirname, 'images', 'Nitro_Wallpaper_01_3840x2400.jpg');
-const APPLICATION_NO_VALUE = '45451515155';
+const APPLICATION_NO_VALUE = '5565656565';
 const CARD_NAME_VALUE = 'John Doe';
 const CARD_NUMBER_VALUE = '5189880019634796';
 const EXP_DATE_VALUE = '11/24';
@@ -19,7 +17,6 @@ const PASSPORT_NO_VALUE = 'A1234567';
 const FIRST_NAME_VALUE = 'John';
 const LAST_NAME_VALUE = 'Doe';
 const PHONE_NUMBER_VALUE = '1234567890';
-const EMAIL_VALUE = 'john.doe@example.com';
 
 (async () => {
   try {
@@ -39,10 +36,10 @@ const EMAIL_VALUE = 'john.doe@example.com';
     const pages = await browser.pages();
     // pages.map((page, index) => console.log(`Page ${index + 1}: ${page.url()}`));
 
-    // Filter out the PCC page
-    const page = pages.find(page => page.url().startsWith(pccWebsiteUrl));
+    // Filter out the passport page
+    const page = pages.find(page => page.url().startsWith(passportWebsiteUrl));
     if (!page) {
-      throw new Error('PCC page not found');
+      throw new Error('Passport page not found');
     }
 
     // Evaluate the screen dimensions in the page context
@@ -58,15 +55,6 @@ const EMAIL_VALUE = 'john.doe@example.com';
 
     // Define the steps with selectors and actions
     const steps = [
-      {
-        selector: 'div[elname="uploadActionDiv"]', action: async (context) => {
-          const [fileChooser] = await Promise.all([
-            context.waitForFileChooser(),
-            context.click('div[elname="uploadActionDiv"]'),
-          ]);
-          await fileChooser.accept([IMAGE_PATH]);
-        }
-      },
       {
         selector: 'input[name="SingleLine1"]', action: async (context) => {
           await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="SingleLine1"]');
@@ -84,29 +72,43 @@ const EMAIL_VALUE = 'john.doe@example.com';
           await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="cardnumber"]');
           await context.type('input[name="cardnumber"]', CARD_NUMBER_VALUE);
         },
-        iframeSelector: 'iframe[name="__privateStripeFrame9423"]' // Add iframe selector
+        iframeSelector: 'iframe[name="__privateStripeFrame4013"]' // Add iframe selector
       },
       {
         selector: 'input[name="exp-date"]', action: async (context) => {
           await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="exp-date"]');
           await context.type('input[name="exp-date"]', EXP_DATE_VALUE);
         },
-        iframeSelector: 'iframe[name="__privateStripeFrame9423"]' // Add iframe selector
+        iframeSelector: 'iframe[name="__privateStripeFrame4013"]' // Add iframe selector
       },
       {
         selector: 'input[name="cvc"]', action: async (context) => {
           await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="cvc"]');
           await context.type('input[name="cvc"]', CVC_VALUE);
         },
-        iframeSelector: 'iframe[name="__privateStripeFrame9423"]' // Add iframe selector
+        iframeSelector: 'iframe[name="__privateStripeFrame4013"]' // Add iframe selector
       },
       {
         selector: 'input[name="postal"]', action: async (context) => {
           await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="postal"]');
           await context.type('input[name="postal"]', POSTAL_VALUE);
         },
-        iframeSelector: 'iframe[name="__privateStripeFrame9423"]' // Add iframe selector
+        iframeSelector: 'iframe[name="__privateStripeFrame4013"]' // Add iframe selector
       },
+      {
+        selector: 'input[name="Date"]',
+        action: async (context) => {
+          // Click the date input field to open the datepicker
+          await context.click('input[name="Date"]');
+
+          // Wait for the datepicker to become visible
+          await context.waitForSelector('.ui-datepicker-calendar', { visible: true });
+
+          // Click on the desired date
+          await context.click('.ui-datepicker-calendar td[data-handler="selectDay"] a');
+        }
+      },
+      { selector: 'select[name="Dropdown"]', action: async (context) => await context.select('select[name="Dropdown"]', 'Renewal of Passport') },
       {
         selector: 'input[name="SingleLine"]', action: async (context) => {
           await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="SingleLine"]');
@@ -126,32 +128,9 @@ const EMAIL_VALUE = 'john.doe@example.com';
         }
       },
       {
-        selector: 'input[name="Date"]',
-        action: async (context) => {
-          // Click the date input field to open the datepicker
-          await context.click('input[name="Date"]');
-
-          // Wait for the datepicker to become visible
-          await context.waitForSelector('.ui-datepicker-calendar', { visible: true });
-
-          // Click on the desired date
-          await context.click('.ui-datepicker-calendar td[data-handler="selectDay"] a');
-        }
-      },
-      {
         selector: 'input[name="PhoneNumber"]', action: async (context) => {
           await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="PhoneNumber"]');
           await context.type('input[name="PhoneNumber"]', PHONE_NUMBER_VALUE);
-        }
-      },
-      {
-        selector: 'input[name="Email"]', action: async (context) => {
-          await context.evaluate(selector => {
-            const emailInput = document.querySelector(selector);
-            emailInput.removeAttribute('disabled');
-            emailInput.value = '';
-          }, 'input[name="Email"]');
-          await context.type('input[name="Email"]', EMAIL_VALUE);
         }
       },
       {
@@ -165,7 +144,7 @@ const EMAIL_VALUE = 'john.doe@example.com';
             throw new Error('Failed to solve CAPTCHA');
           }
         }
-      },
+      }
     ];
 
     await submitForm(page, steps);
