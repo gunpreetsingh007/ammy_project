@@ -42,8 +42,6 @@ async function solveCaptcha(imageUrl) {
         throw new Error('Timeout while waiting for CAPTCHA solution.');
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait for 2 seconds before checking the result
-
       const resultResponse = await axios.get('https://2captcha.com/res.php', {
         params: {
           key: CAPTCHA_API_KEY,
@@ -52,13 +50,13 @@ async function solveCaptcha(imageUrl) {
           json: 1,
         },
       });
-
       if (resultResponse.data.status === 1) {
         solution = resultResponse.data.request;
       } else if (resultResponse.data.status === 0 && resultResponse.data.request !== 'CAPCHA_NOT_READY') {
         throw new Error(`2Captcha error: ${resultResponse.data.request}`);
       } else {
         console.log('Captcha not ready yet, retrying...');
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait for 2 seconds
       }
     }
 
@@ -82,25 +80,6 @@ const isVisible = async (context, element) => {
     };
     return isVisibleRecursive(element);
   }, element);
-};
-
-// Function to click an element with retries
-const clickElement = async (context, selector) => {
-  for (let attempt = 0; attempt < 5; attempt++) {
-    try {
-      const elements = await context.$$(selector);
-      for (const elementHandle of elements) {
-        if (await isVisible(context, elementHandle)) {
-          await elementHandle.click();
-          return;
-        }
-      }
-    } catch (error) {
-      console.log(`Attempt ${attempt + 1} to click ${selector} failed: ${error.message}`);
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for 1 second before retrying
-    }
-  }
-  throw new Error(`Failed to click ${selector} after multiple attempts`);
 };
 
 // Function to get all visible elements
@@ -142,13 +121,32 @@ const submitForm = async (page, steps) => {
     }
 
     // Check for the presence of the "Next" button or the "Submit" button
-    if (await page.$('a.zf-next')) {
-      await clickElement(page, 'a.zf-next');
-      await new Promise(resolve => setTimeout(resolve, 800)); // Wait for 500 milliseconds
-    } else if (await page.$('button.zfbtnSubmit')) {
-      await clickElement(page, 'button.zfbtnSubmit');
-      formSubmitted = true;
-    } else {
+    const submitButtons = await page.$$('button.zfbtnSubmit');
+    const nextButtons = await page.$$('a.zf-next');
+
+    let clicked = false;
+
+    for (const button of submitButtons) {
+      if (await isVisible(page, button)) {
+        await button.click();
+        formSubmitted = true;
+        clicked = true;
+        break;
+      }
+    }
+
+    if (!clicked) {
+      for (const button of nextButtons) {
+        if (await isVisible(page, button)) {
+          await button.click();
+          clicked = true;
+          await new Promise(resolve => setTimeout(resolve, 800)); // Wait for 800 milliseconds
+          break;
+        }
+      }
+    }
+
+    if (!clicked) {
       throw new Error('No "Next" or "Submit" button found.');
     }
   }

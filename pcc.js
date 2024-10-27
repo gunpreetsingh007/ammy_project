@@ -46,15 +46,15 @@ const EMAIL_VALUE = 'john.doe@example.com';
     }
 
     // Evaluate the screen dimensions in the page context
-    const { width, height } = await page.evaluate(() => {
-      return {
-        width: window.screen.width,
-        height: window.screen.height,
-      };
-    });
+    // const { width, height } = await page.evaluate(() => {
+    //   return {
+    //     width: window.screen.width,
+    //     height: window.screen.height,
+    //   };
+    // });
 
     // Set the viewport to the screen dimensions
-    await page.setViewport({ width, height });
+    // await page.setViewport({ width, height });
 
     // Define the steps with selectors and actions
     const steps = [
@@ -161,6 +161,7 @@ const EMAIL_VALUE = 'john.doe@example.com';
           const captchaImageUrl = await context.evaluate(img => img.src, captchaImageElement);
           const captchaSolution = await solveCaptcha(captchaImageUrl);
           if (captchaSolution) {
+            await context.evaluate(selector => document.querySelector(selector).value = '', '#verificationcodeTxt');
             await context.type('#verificationcodeTxt', captchaSolution);
           } else {
             throw new Error('Failed to solve CAPTCHA');
