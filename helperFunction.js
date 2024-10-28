@@ -21,7 +21,7 @@ async function solveCaptcha(page) {
     const imageResponse = await axios.get(captchaImageUrl, { responseType: 'arraybuffer' });
     const captchaBuffer = Buffer.from(imageResponse.data, 'binary');
     const base64Captcha = captchaBuffer.toString('base64').replace(/^data:image\/(png|jpg|jpeg|gif);base64,/, "");
-     
+
     // Step 2: Send the image to TrueCaptcha for solving
     const params = {
       userid: CAPTCHA_USER_ID,
@@ -108,6 +108,7 @@ const submitForm = async (page, steps) => {
 
   // Loop to handle clicking "Next" or "Submit" and filling new fields that become visible
   while (!formSubmitted) {
+    await new Promise(resolve => setTimeout(resolve, 100)); // Wait for 100 milliseconds
     // Click the visible "Next" or "Submit" button
     const clickedButton = await clickVisibleButton(page);
 
