@@ -89,8 +89,10 @@ const getVisibleElements = async (context, selectors) => {
     let elementContext = context;
     if (step.iframeSelector) {
       const iframeElement = await context.$(step.iframeSelector);
-      const iframe = await iframeElement.contentFrame();
-      elementContext = iframe;
+      if(iframeElement){
+        const iframe = await iframeElement.contentFrame();
+        elementContext = iframe;
+      }
     }
     const elementHandle = await elementContext.$(step.selector);
     if (elementHandle && await isVisible(elementContext, elementHandle)) {
