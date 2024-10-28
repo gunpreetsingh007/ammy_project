@@ -131,22 +131,25 @@ const EMAIL_VALUE = 'john.doe@example.com';
         action: async (context) => {
           // Wait for the calendar icon to be visible
           await context.waitForSelector('.calIconWrapper', { visible: true });
-      
+
           // Scroll the icon into view
           // await context.evaluate(() => {
           //   document.querySelector('.calIconWrapper').scrollIntoView({ block: 'center', inline: 'center' });
           // });
-      
+
           // Click the calendar icon to open the datepicker
           await context.click('.calIconWrapper');
-      
+
           // Wait for the datepicker to become visible
           await context.waitForSelector('.ui-datepicker-calendar', { visible: true });
-      
+          // Focus on the date input field
+          const dateInput = await context.$('input[name="Date"]');
+          await dateInput.focus();
+
           // Press Enter to select the date
           await context.keyboard.press('Enter');
         }
-      }, 
+      },
       {
         selector: 'input[name="PhoneNumber"]', action: async (context) => {
           await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="PhoneNumber"]');
