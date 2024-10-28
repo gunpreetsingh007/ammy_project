@@ -111,10 +111,10 @@ const DROPDOWN_VALUE = 'Renewal of Passport';
           await context.click('.calIconWrapper');
       
           // Wait for the datepicker to become visible
-          await context.waitForSelector('.ui-datepicker-calendar td[data-handler="selectDay"] a', { visible: true });
+          await context.waitForSelector('.ui-datepicker-calendar', { visible: true });
       
-          // Click on the desired date
-          await context.click('.ui-datepicker-calendar td[data-handler="selectDay"] a');
+          // Press Enter to select the date
+          await context.keyboard.press('Enter');
         }
       },      
       { selector: 'select[name="Dropdown"]', action: async (context) => await context.select('select[name="Dropdown"]', DROPDOWN_VALUE) },

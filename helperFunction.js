@@ -51,6 +51,9 @@ async function solveCaptcha(imageUrl) {
         },
       });
       if (resultResponse.data.status === 1) {
+        if(resultResponse.data.request === 'sorry'){
+          throw new Error('2Captcha error: CAPTCHA was not solved');
+        }
         solution = resultResponse.data.request;
       } else if (resultResponse.data.status === 0 && resultResponse.data.request !== 'CAPCHA_NOT_READY') {
         throw new Error(`2Captcha error: ${resultResponse.data.request}`);
