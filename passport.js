@@ -7,16 +7,17 @@ const solveCaptcha = require('./helperFunction').solveCaptcha;
 const passportWebsiteUrl = "https://forms.zohopublic.eu/EoILisbon/form/FREEAppointmentforPassportServiceatEoILisbon";
 
 // Define constant variables for values
-const APPLICATION_NO_VALUE = '5565656565';
-const CARD_NAME_VALUE = 'John Doe';
+const APPLICATION_NO_VALUE = '24-2004980814';
+const CARD_NAME_VALUE = 'ammy';
 const CARD_NUMBER_VALUE = '5189880019634796';
 const EXP_DATE_VALUE = '11/24';
 const CVC_VALUE = '123';
 const POSTAL_VALUE = '12345';
-const PASSPORT_NO_VALUE = 'A1234567';
-const FIRST_NAME_VALUE = 'John';
-const LAST_NAME_VALUE = 'Doe';
-const PHONE_NUMBER_VALUE = '1234567890';
+const PASSPORT_NO_VALUE = 'p2637224';
+const FIRST_NAME_VALUE = 'love';
+const LAST_NAME_VALUE = 'ammy';
+const PHONE_NUMBER_VALUE = '933598539';
+const DROPDOWN_VALUE = 'Renewal of Passport';
 
 (async () => {
   try {
@@ -96,10 +97,9 @@ const PHONE_NUMBER_VALUE = '1234567890';
         iframeSelector: 'iframe[name="__privateStripeFrame4013"]' // Add iframe selector
       },
       {
-        selector: 'input[name="Date"]',
-        action: async (context) => {
-          // Click the date input field to open the datepicker
-          await context.click('input[name="Date"]');
+        selector: 'div[elname="imgWrapDiv"]', action: async (context) => {
+          // Click the calendar icon to open the datepicker
+          await context.click('div[elname="imgWrapDiv"]');
 
           // Wait for the datepicker to become visible
           await context.waitForSelector('.ui-datepicker-calendar', { visible: true });
@@ -108,7 +108,7 @@ const PHONE_NUMBER_VALUE = '1234567890';
           await context.click('.ui-datepicker-calendar td[data-handler="selectDay"] a');
         }
       },
-      { selector: 'select[name="Dropdown"]', action: async (context) => await context.select('select[name="Dropdown"]', 'Renewal of Passport') },
+      { selector: 'select[name="Dropdown"]', action: async (context) => await context.select('select[name="Dropdown"]', DROPDOWN_VALUE) },
       {
         selector: 'input[name="SingleLine"]', action: async (context) => {
           await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="SingleLine"]');
