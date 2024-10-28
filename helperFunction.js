@@ -4,14 +4,21 @@ const FormData = require('form-data');
 const CAPTCHA_API_KEY = process.env.CAPTCHA_API_KEY;
 
 // Function to solve CAPTCHA using 2Captcha
-async function solveCaptcha(imageUrl) {
+async function solveCaptcha(page) {
   if (!CAPTCHA_API_KEY) {
     throw new Error('CAPTCHA_API_KEY is not set in the environment variables.');
   }
 
   try {
+    // Wait for the CAPTCHA image to load
+    await page.waitForSelector('#zf-captcha', { visible: true });
+
+    const captchaImageUrl = await page.evaluate(() => {
+      return document.querySelector('#zf-captcha').src;
+    });
+
     // Step 1: Download the CAPTCHA image
-    const imageResponse = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+    const imageResponse = await axios.get(captchaImageUrl, { responseType: 'arraybuffer' });
     const captchaBuffer = Buffer.from(imageResponse.data, 'binary');
     const base64Captcha = captchaBuffer.toString('base64');
 
@@ -70,111 +77,159 @@ async function solveCaptcha(imageUrl) {
   }
 }
 
-// Function to check if an element and its parents are visible
-const isVisible = async (context, element) => {
-  return await context.evaluate(element => {
+// Unified function to check if an element is visible (works with both selectors and element handles)
+const isVisible = async (context, selectorOrElementHandle) => {
+  if (typeof selectorOrElementHandle === 'string') {
+    // It's a selector; get the element handle
+    const elementHandle = await context.$(selectorOrElementHandle);
+    if (!elementHandle) return false;
+    return await isElementVisibleRecursive(elementHandle);
+  } else {
+    // It's an element handle
+    return await isElementVisibleRecursive(selectorOrElementHandle);
+  }
+};
+
+// Helper function to check visibility of an element and its parents (using element handles)
+const isElementVisibleRecursive = async (elementHandle) => {
+  return await elementHandle.evaluate((elem) => {
     const isVisibleRecursive = (el) => {
-      if (!el) return true;
+      if (!el) return true; // Reached the root element
       const style = window.getComputedStyle(el);
-      if (style.opacity === '0' || style.display === 'none' || style.visibility === 'hidden') {
+      if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0' || el.hasAttribute('hidden')) {
         return false;
       }
       return isVisibleRecursive(el.parentElement);
     };
-    return isVisibleRecursive(element);
-  }, element);
-};
-
-// Function to get all visible elements
-const getVisibleElements = async (context, selectors) => {
-  const visibleElements = [];
-  for (const step of selectors) {
-    let elementContext = context;
-    if (step.iframeSelector) {
-      const iframes = await context.$$('iframe');
-      for (const iframeElement of iframes) {
-        const iframe = await iframeElement.contentFrame();
-        const elementHandle = await iframe.$(step.selector);
-        if (elementHandle && await isVisible(iframe, elementHandle)) {
-          elementContext = iframe;
-          break;
-        }
-      }
-    }
-    const elementHandle = await elementContext.$(step.selector);
-    if (elementHandle && await isVisible(elementContext, elementHandle)) {
-      visibleElements.push(step);
-    }
-  }
-  return visibleElements;
+    return isVisibleRecursive(elem);
+  });
 };
 
 const submitForm = async (page, steps) => {
   let formSubmitted = false;
 
-  // Iterate through the steps and perform actions
-  while (!formSubmitted) {
-    const visibleSteps = await getVisibleElements(page, steps);
-    if (visibleSteps.length === 0) {
-      throw new Error('No visible elements found to perform actions.');
-    }
+  // Attempt to fill all fields initially
+  for (const step of steps) {
+    if (step.completed) continue;
 
-    for (const step of visibleSteps) {
+    try {
       let context = page;
+
       if (step.iframeSelector) {
-        const iframes = await page.$$('iframe');
-        for (const iframeElement of iframes) {
-          const iframe = await iframeElement.contentFrame();
-          const elementHandle = await iframe.$(step.selector);
-          if (elementHandle && await isVisible(iframe, elementHandle)) {
-            context = iframe;
-            break;
+        if (!step.iframeContext) {
+          const iframes = await page.$$(step.iframeSelector);
+          for (const iframeElement of iframes) {
+            const iframe = await iframeElement.contentFrame();
+            const elementHandle = await iframe.$(step.selector);
+            if (elementHandle) {
+              step.iframeContext = iframe;
+              break;
+            }
           }
         }
+        context = step.iframeContext || context;
       }
+
       await step.action(context);
+      step.completed = true;
+      console.log(`Filled: ${step.name}`);
+
+    } catch (error) {
+      console.warn(`Could not fill the field "${step.name}" at this time. Will attempt later if possible.`);
+    }
+  }
+
+  // Loop to handle clicking "Next" or "Submit" and filling new fields that become visible
+  while (!formSubmitted) {
+    // Click the visible "Next" or "Submit" button
+    const clickedButton = await clickVisibleButton(page);
+
+    if (!clickedButton) {
+      throw new Error('No visible "Next" or "Submit" button found.');
     }
 
-    // Check for the presence of the "Next" button or the "Submit" button
-    const submitButtons = await page.$$('button.zfbtnSubmit');
-    const nextButtons = await page.$$('a.zf-next');
-
-    let clicked = false;
-
-    for (const button of submitButtons) {
-      if (await isVisible(page, button)) {
-        await button.click();
-        formSubmitted = true;
-        clicked = true;
-        break;
-      }
+    if (clickedButton === 'Submit') {
+      formSubmitted = true;
+      console.log("Form submission initiated.");
+      break;
     }
 
-    if (!clicked) {
-      for (const button of nextButtons) {
-        if (await isVisible(page, button)) {
-          await button.click();
-          clicked = true;
-          await new Promise(resolve => setTimeout(resolve, 800)); // Wait for 800 milliseconds
-          break;
+    // After clicking "Next", attempt to fill any new fields that became visible
+    for (const step of steps) {
+      if (step.completed) continue;
+
+      try {
+        let context = page;
+
+        if (step.iframeSelector) {
+          if (!step.iframeContext) {
+            const iframes = await page.$$(step.iframeSelector);
+            for (const iframeElement of iframes) {
+              const iframe = await iframeElement.contentFrame();
+              const elementHandle = await iframe.$(step.selector);
+              if (elementHandle) {
+                step.iframeContext = iframe;
+                break;
+              }
+            }
+          }
+          context = step.iframeContext || context;
         }
+
+        const isElementVisible = await isVisible(context, step.selector);
+
+        if (isElementVisible) {
+          await step.action(context);
+          step.completed = true;
+          console.log(`Filled: ${step.name}`);
+        }
+
+      } catch (error) {
+        throw new Error(`Could not fill the field "${step.name}" on this step even though it became visible.`);
       }
     }
+  }
 
-    if (!clicked) {
-      throw new Error('No "Next" or "Submit" button found.');
+  // Wait for confirmation that the form was submitted
+  try {
+    await page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 10000 });
+    console.log("Form submission completed successfully.");
+  } catch (error) {
+    console.error("Form submission may have failed or timed out:", error.message);
+  }
+};
+
+// Function to click the visible "Next" or "Submit" button
+const clickVisibleButton = async (page) => {
+  // Selectors for the buttons
+  const submitButtonSelector = 'button.zfbtnSubmit';
+  const nextButtonSelector = 'a.zf-next';
+
+  // Check for visible submit button
+  const submitButtons = await page.$$(submitButtonSelector);
+  for (const button of submitButtons) {
+    const isButtonVisible = await isVisible(page, button);
+    if (isButtonVisible) {
+      await button.click();
+      console.log('Clicked "Submit" button.');
+      return 'Submit';
     }
   }
 
-  // Final check to ensure the form was submitted
-  if (!formSubmitted) {
-    console.error("Form submission failed.");
-  } else {
-    // Wait for the submission to process
-    await new Promise(resolve => setTimeout(resolve, 5000)); // Wait for 5 seconds to let the form submit
-    console.log("Form submission completed successfully.");
+  // Check for visible next button
+  const nextButtons = await page.$$(nextButtonSelector);
+  for (const button of nextButtons) {
+    const isButtonVisible = await isVisible(page, button);
+    if (isButtonVisible) {
+      await button.click();
+      console.log('Clicked "Next" button.');
+      return 'Next';
+    }
   }
-}
+
+  // If neither button is found
+  return null;
+};
 
 module.exports = {
   solveCaptcha,
