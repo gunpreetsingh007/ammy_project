@@ -73,28 +73,28 @@ const DROPDOWN_VALUE = 'Renewal of Passport';
           await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="cardnumber"]');
           await context.type('input[name="cardnumber"]', CARD_NUMBER_VALUE);
         },
-        iframeSelector: 'iframe[name="__privateStripeFrame4013"]' // Add iframe selector
+        iframeSelector: 'iframe' // Search for any iframe
       },
       {
         selector: 'input[name="exp-date"]', action: async (context) => {
           await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="exp-date"]');
           await context.type('input[name="exp-date"]', EXP_DATE_VALUE);
         },
-        iframeSelector: 'iframe[name="__privateStripeFrame4013"]' // Add iframe selector
+        iframeSelector: 'iframe' // Search for any iframe
       },
       {
         selector: 'input[name="cvc"]', action: async (context) => {
           await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="cvc"]');
           await context.type('input[name="cvc"]', CVC_VALUE);
         },
-        iframeSelector: 'iframe[name="__privateStripeFrame4013"]' // Add iframe selector
+        iframeSelector: 'iframe' // Search for any iframe
       },
       {
         selector: 'input[name="postal"]', action: async (context) => {
           await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="postal"]');
           await context.type('input[name="postal"]', POSTAL_VALUE);
         },
-        iframeSelector: 'iframe[name="__privateStripeFrame4013"]' // Add iframe selector
+        iframeSelector: 'iframe' // Search for any iframe
       },
       {
         selector: '.calIconWrapper',

@@ -88,10 +88,14 @@ const getVisibleElements = async (context, selectors) => {
   for (const step of selectors) {
     let elementContext = context;
     if (step.iframeSelector) {
-      const iframeElement = await context.$(step.iframeSelector);
-      if(iframeElement){
+      const iframes = await context.$$('iframe');
+      for (const iframeElement of iframes) {
         const iframe = await iframeElement.contentFrame();
-        elementContext = iframe;
+        const elementHandle = await iframe.$(step.selector);
+        if (elementHandle && await isVisible(iframe, elementHandle)) {
+          elementContext = iframe;
+          break;
+        }
       }
     }
     const elementHandle = await elementContext.$(step.selector);
@@ -115,9 +119,15 @@ const submitForm = async (page, steps) => {
     for (const step of visibleSteps) {
       let context = page;
       if (step.iframeSelector) {
-        const iframeElement = await page.$(step.iframeSelector);
-        const iframe = await iframeElement.contentFrame();
-        context = iframe;
+        const iframes = await page.$$('iframe');
+        for (const iframeElement of iframes) {
+          const iframe = await iframeElement.contentFrame();
+          const elementHandle = await iframe.$(step.selector);
+          if (elementHandle && await isVisible(iframe, elementHandle)) {
+            context = iframe;
+            break;
+          }
+        }
       }
       await step.action(context);
     }
