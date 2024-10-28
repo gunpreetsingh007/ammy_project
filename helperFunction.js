@@ -31,10 +31,6 @@ async function solveCaptcha(page) {
 
     const response = await axios.post('https://api.apitruecaptcha.org/one/gettext', params);
 
-    if (response.data.result !== 'success') {
-      throw new Error(`TrueCaptcha error: ${response.data.result}`);
-    }
-
     const solution = response.data.result;
 
     return solution;
