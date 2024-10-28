@@ -85,28 +85,28 @@ const EMAIL_VALUE = 'john.doe@example.com';
           await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="cardnumber"]');
           await context.type('input[name="cardnumber"]', CARD_NUMBER_VALUE);
         },
-        iframeSelector: 'iframe[name="__privateStripeFrame9423"]' // Add iframe selector
+        iframeSelector: 'iframe' // Add iframe selector
       },
       {
         selector: 'input[name="exp-date"]', action: async (context) => {
           await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="exp-date"]');
           await context.type('input[name="exp-date"]', EXP_DATE_VALUE);
         },
-        iframeSelector: 'iframe[name="__privateStripeFrame9423"]' // Add iframe selector
+        iframeSelector: 'iframe' // Add iframe selector
       },
       {
         selector: 'input[name="cvc"]', action: async (context) => {
           await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="cvc"]');
           await context.type('input[name="cvc"]', CVC_VALUE);
         },
-        iframeSelector: 'iframe[name="__privateStripeFrame9423"]' // Add iframe selector
+        iframeSelector: 'iframe' // Add iframe selector
       },
       {
         selector: 'input[name="postal"]', action: async (context) => {
           await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="postal"]');
           await context.type('input[name="postal"]', POSTAL_VALUE);
         },
-        iframeSelector: 'iframe[name="__privateStripeFrame9423"]' // Add iframe selector
+        iframeSelector: 'iframe' // Add iframe selector
       },
       {
         selector: 'input[name="SingleLine"]', action: async (context) => {
@@ -127,18 +127,26 @@ const EMAIL_VALUE = 'john.doe@example.com';
         }
       },
       {
-        selector: 'input[name="Date"]',
+        selector: '.calIconWrapper',
         action: async (context) => {
-          // Click the date input field to open the datepicker
-          await context.click('input[name="Date"]');
-
+          // Wait for the calendar icon to be visible
+          await context.waitForSelector('.calIconWrapper', { visible: true });
+      
+          // Scroll the icon into view
+          // await context.evaluate(() => {
+          //   document.querySelector('.calIconWrapper').scrollIntoView({ block: 'center', inline: 'center' });
+          // });
+      
+          // Click the calendar icon to open the datepicker
+          await context.click('.calIconWrapper');
+      
           // Wait for the datepicker to become visible
           await context.waitForSelector('.ui-datepicker-calendar', { visible: true });
-
-          // Click on the desired date
-          await context.click('.ui-datepicker-calendar td[data-handler="selectDay"] a');
+      
+          // Press Enter to select the date
+          await context.keyboard.press('Enter');
         }
-      },
+      }, 
       {
         selector: 'input[name="PhoneNumber"]', action: async (context) => {
           await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="PhoneNumber"]');
