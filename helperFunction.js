@@ -154,12 +154,13 @@ const submitForm = async (page, steps) => {
     }
   }
 
-  // Wait for confirmation that the form was submitted
-  try {
-    await page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 10000 });
+  // Final check to ensure the form was submitted
+  if (!formSubmitted) {
+    console.error("Form submission failed.");
+  } else {
+    // Wait for the submission to process
+    await new Promise(resolve => setTimeout(resolve, 5000)); // Wait for 5 seconds to let the form submit
     console.log("Form submission completed successfully.");
-  } catch (error) {
-    console.error("Form submission may have failed or timed out:", error.message);
   }
 };
 
