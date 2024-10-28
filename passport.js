@@ -111,7 +111,7 @@ const DROPDOWN_VALUE = 'Renewal of Passport';
           await context.click('.calIconWrapper');
       
           // Wait for the datepicker to become visible
-          await context.waitForSelector('.ui-datepicker-calendar', { visible: true });
+          await context.waitForSelector('.ui-datepicker-calendar td[data-handler="selectDay"] a', { visible: true });
       
           // Click on the desired date
           await context.click('.ui-datepicker-calendar td[data-handler="selectDay"] a');
