@@ -97,17 +97,26 @@ const DROPDOWN_VALUE = 'Renewal of Passport';
         iframeSelector: 'iframe[name="__privateStripeFrame4013"]' // Add iframe selector
       },
       {
-        selector: 'div[elname="imgWrapDiv"]', action: async (context) => {
+        selector: '.calIconWrapper',
+        action: async (context) => {
+          // Wait for the calendar icon to be visible
+          await context.waitForSelector('.calIconWrapper', { visible: true });
+      
+          // Scroll the icon into view
+          // await context.evaluate(() => {
+          //   document.querySelector('.calIconWrapper').scrollIntoView({ block: 'center', inline: 'center' });
+          // });
+      
           // Click the calendar icon to open the datepicker
-          await context.click('div[elname="imgWrapDiv"]');
-
+          await context.click('.calIconWrapper');
+      
           // Wait for the datepicker to become visible
           await context.waitForSelector('.ui-datepicker-calendar', { visible: true });
-
+      
           // Click on the desired date
           await context.click('.ui-datepicker-calendar td[data-handler="selectDay"] a');
         }
-      },
+      },      
       { selector: 'select[name="Dropdown"]', action: async (context) => await context.select('select[name="Dropdown"]', DROPDOWN_VALUE) },
       {
         selector: 'input[name="SingleLine"]', action: async (context) => {
