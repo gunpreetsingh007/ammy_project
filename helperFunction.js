@@ -1,12 +1,12 @@
 require('dotenv').config();
 const axios = require('axios');
-const FormData = require('form-data');
 const CAPTCHA_API_KEY = process.env.CAPTCHA_API_KEY;
+const CAPTCHA_USER_ID = process.env.CAPTCHA_USER_ID; // Add your TrueCaptcha user ID to the environment variables
 
-// Function to solve CAPTCHA using 2Captcha
+// Function to solve CAPTCHA using TrueCaptcha
 async function solveCaptcha(page) {
-  if (!CAPTCHA_API_KEY) {
-    throw new Error('CAPTCHA_API_KEY is not set in the environment variables.');
+  if (!CAPTCHA_API_KEY || !CAPTCHA_USER_ID) {
+    throw new Error('CAPTCHA_API_KEY or CAPTCHA_USER_ID is not set in the environment variables.');
   }
 
   try {
@@ -22,53 +22,20 @@ async function solveCaptcha(page) {
     const captchaBuffer = Buffer.from(imageResponse.data, 'binary');
     const base64Captcha = captchaBuffer.toString('base64');
 
-    // Step 2: Send the image to 2Captcha for solving
-    const formData = new FormData();
-    formData.append('key', CAPTCHA_API_KEY);
-    formData.append('method', 'base64');
-    formData.append('body', base64Captcha);
-    formData.append('json', '1');
+    // Step 2: Send the image to TrueCaptcha for solving
+    const params = {
+      userid: CAPTCHA_USER_ID,
+      apikey: CAPTCHA_API_KEY,
+      data: base64Captcha,
+    };
 
-    const response = await axios.post('https://2captcha.com/in.php', formData, {
-      headers: formData.getHeaders(),
-    });
+    const response = await axios.post('https://api.apitruecaptcha.org/one/gettext', params);
 
-    if (response.data.status !== 1) {
-      throw new Error(`2Captcha error: ${response.data.request}`);
+    if (response.data.result !== 'success') {
+      throw new Error(`TrueCaptcha error: ${response.data.result}`);
     }
 
-    const captchaId = response.data.request;
-
-    // Step 3: Wait for the solution from 2Captcha
-    let solution = null;
-    const startTime = Date.now();
-    const timeout = 120000; // 2 minutes timeout
-
-    while (!solution) {
-      if (Date.now() - startTime > timeout) {
-        throw new Error('Timeout while waiting for CAPTCHA solution.');
-      }
-
-      const resultResponse = await axios.get('https://2captcha.com/res.php', {
-        params: {
-          key: CAPTCHA_API_KEY,
-          action: 'get',
-          id: captchaId,
-          json: 1,
-        },
-      });
-      if (resultResponse.data.status === 1) {
-        if(resultResponse.data.request === 'sorry'){
-          throw new Error('2Captcha error: CAPTCHA was not solved');
-        }
-        solution = resultResponse.data.request;
-      } else if (resultResponse.data.status === 0 && resultResponse.data.request !== 'CAPCHA_NOT_READY') {
-        throw new Error(`2Captcha error: ${resultResponse.data.request}`);
-      } else {
-        console.log('Captcha not ready yet, retrying...');
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait for 2 seconds
-      }
-    }
+    const solution = response.data.result;
 
     return solution;
   } catch (error) {
