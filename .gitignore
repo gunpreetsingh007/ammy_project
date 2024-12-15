@@ -1,3 +1,5 @@
 node_modules
 .env
 images
+credentials*.json
+token*.json

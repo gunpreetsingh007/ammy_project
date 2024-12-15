@@ -74,7 +74,7 @@ const submitForm = async (page, steps) => {
   // Attempt to fill all fields initially
   for (const step of steps) {
     if (step.completed) continue;
-
+    if (typeof step.fillInitially === "boolean" && !fillInitially) continue;
     try {
       let context = page;
 
@@ -196,7 +196,36 @@ const clickVisibleButton = async (page) => {
   return null;
 };
 
+async function interceptResponse(response, newResponse) {
+  const fetchRequest = response.request();
+  const { body, headers, status, contentType } = newResponse;
+
+  // Create headers object
+  const responseHeaders = headers || {};
+  if (contentType) {
+    responseHeaders['Content-Type'] = contentType;
+  }
+
+  // Fetch the original request
+  const fakeResponse = await fetch(fetchRequest.url(), {
+    method: fetchRequest.method(),
+    headers: fetchRequest.headers(),
+    body: fetchRequest.postData(),
+  });
+
+  const { client } = response._client._client;
+
+  // Send the modified response
+  await client.send('Fetch.fulfillRequest', {
+    requestId: fetchRequest._interceptionId,
+    responseCode: status || 200,
+    responseHeaders: Object.entries(responseHeaders).map(([name, value]) => ({ name, value: String(value) })),
+    body: Buffer.from(body).toString('base64'),
+  });
+}
+
 module.exports = {
   solveCaptcha,
-  submitForm
+  submitForm,
+  interceptResponse
 };
