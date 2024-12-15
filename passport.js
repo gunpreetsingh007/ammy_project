@@ -325,6 +325,37 @@ const EMAIL_VALUE = 'gunpreetsinghking7172@gmail.com';
     // Click "Verify OTP" Button
     await page.click('button.otpBtn[onclick="validateOtp()"]');
 
+    // Remove Swiper functionality and display all fields
+    await page.evaluate(() => {
+      // Unhide all form elements
+      document.querySelectorAll('.swiper-slide').forEach((slide) => {
+        slide.style.display = 'block';
+        slide.style.opacity = '1';
+        slide.style.transform = 'none';
+        slide.style.position = 'static';
+      });
+
+      // Ensure the submit button is visible
+      const submitButton = document.querySelector('.zfbtnSubmit');
+      if (submitButton) {
+        submitButton.style.display = 'block';
+        submitButton.style.opacity = '1';
+      }
+
+      // Remove navigation buttons (Next/Prev)
+      document.querySelectorAll('.zf-prev, .zf-next').forEach((button) => {
+        button.style.display = 'none';
+      });
+
+      // Disable Swiper functionality if active
+      if (window.Swiper) {
+        const swiperContainers = document.querySelectorAll('.swiper-container');
+        swiperContainers.forEach((container) => {
+          container.swiper.destroy(true, true); // Destroy Swiper instances
+        });
+      }
+    });
+
     await submitForm(page, steps);
 
   } catch (error) {
