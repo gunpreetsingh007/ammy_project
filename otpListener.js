@@ -1,5 +1,4 @@
 const { google } = require('googleapis');
-const authorize = require('./gmailAuth').authorize;
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -19,8 +18,7 @@ function extractOtp(emailBody) {
 /**
  * Listen for new OTP emails and extract the OTP.
  */
-async function listenForOtp() {
-    const auth = await authorize();
+async function listenForOtp(auth) {
     const gmail = google.gmail({ version: 'v1', auth });
 
     console.log('Listening for new OTP emails...');

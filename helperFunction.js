@@ -2,7 +2,7 @@ require('dotenv').config();
 const axios = require('axios');
 const CAPTCHA_API_KEY = process.env.CAPTCHA_API_KEY;
 const CAPTCHA_USER_ID = process.env.CAPTCHA_USER_ID; // Add your TrueCaptcha user ID to the environment variables
-
+const SUBMIT_BUTTON_ID = 'visible-submit-button-007'
 // Function to solve CAPTCHA using TrueCaptcha
 async function solveCaptcha(page) {
   if (!CAPTCHA_API_KEY || !CAPTCHA_USER_ID) {
@@ -69,12 +69,11 @@ const isElementVisibleRecursive = async (elementHandle) => {
 };
 
 const submitForm = async (page, steps) => {
-  let formSubmitted = false;
 
   // Attempt to fill all fields initially
   for (const step of steps) {
     if (step.completed) continue;
-    if (typeof step.fillInitially === "boolean" && !fillInitially) continue;
+    if (typeof step.fillInitially === "boolean" && !step.fillInitially) continue;
     try {
       let context = page;
 
@@ -102,66 +101,8 @@ const submitForm = async (page, steps) => {
     }
   }
 
-  // Loop to handle clicking "Next" or "Submit" and filling new fields that become visible
-  while (!formSubmitted) {
-    await new Promise(resolve => setTimeout(resolve, 100)); // Wait for 100 milliseconds
-    // Click the visible "Next" or "Submit" button
-    const clickedButton = await clickVisibleButton(page);
-
-    if (!clickedButton) {
-      throw new Error('No visible "Next" or "Submit" button found.');
-    }
-
-    if (clickedButton === 'Submit') {
-      formSubmitted = true;
-      console.log("Form submission initiated.");
-      break;
-    }
-
-    // After clicking "Next", attempt to fill any new fields that became visible
-    for (const step of steps) {
-      if (step.completed) continue;
-
-      try {
-        let context = page;
-
-        if (step.iframeSelector) {
-          if (!step.iframeContext) {
-            const iframes = await page.$$(step.iframeSelector);
-            for (const iframeElement of iframes) {
-              const iframe = await iframeElement.contentFrame();
-              const elementHandle = await iframe.$(step.selector);
-              if (elementHandle) {
-                step.iframeContext = iframe;
-                break;
-              }
-            }
-          }
-          context = step.iframeContext || context;
-        }
-
-        const isElementVisible = await isVisible(context, step.selector);
-
-        if (isElementVisible) {
-          await step.action(context);
-          step.completed = true;
-          console.log(`Filled: ${step.name}`);
-        }
-
-      } catch (error) {
-        throw new Error(`Could not fill the field "${step.name}" on this step even though it became visible.`);
-      }
-    }
-  }
-
-  // Final check to ensure the form was submitted
-  if (!formSubmitted) {
-    console.error("Form submission failed.");
-  } else {
-    // Wait for the submission to process
-    await new Promise(resolve => setTimeout(resolve, 5000)); // Wait for 5 seconds to let the form submit
-    console.log("Form submission completed successfully.");
-  }
+  await page.click(`#${SUBMIT_BUTTON_ID}`);
+  console.log('Clicked "Submit" button.');
 };
 
 // Function to click the visible "Next" or "Submit" button
@@ -227,5 +168,6 @@ async function interceptResponse(response, newResponse) {
 module.exports = {
   solveCaptcha,
   submitForm,
-  interceptResponse
+  interceptResponse,
+  SUBMIT_BUTTON_ID
 };
