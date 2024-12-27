@@ -165,9 +165,52 @@ async function interceptResponse(response, newResponse) {
   });
 }
 
+async function submitOTP(page, auth) {
+  // Perform OTP-related steps
+  await page.waitForSelector('input#email_cntct_val', { visible: true });
+
+  // Enter Email
+  await page.evaluate(selector => document.querySelector(selector).value = '', 'input#email_cntct_val');
+  await page.type('input#email_cntct_val', EMAIL_VALUE);
+
+  // Solve CAPTCHA for OTP
+  await page.waitForSelector('#zf-captcha', { visible: true });
+  const otpCaptchaSolution = await solveCaptcha(page);
+  if (otpCaptchaSolution) {
+    await page.evaluate(selector => document.querySelector(selector).value = '', '#verificationcodeTxt');
+    await page.type('#verificationcodeTxt', otpCaptchaSolution);
+  } else {
+    throw new Error('Failed to solve CAPTCHA for OTP');
+  }
+
+  // Click "Get OTP" Button
+  await page.click('button.otpBtn[elname="getOtpBtn"]');
+
+  // Listen for OTP email
+  const otp = await listenForOtp(auth);
+  if (!otp) {
+    throw new Error('Failed to retrieve OTP from email');
+  }
+
+  // Wait for OTP input fields to appear
+  await page.waitForSelector('#otpValueDiv input', { visible: true });
+
+  // Enter OTP
+  const otpInputs = await page.$$('#otpValueDiv input');
+
+  // Enter the OTP digits
+  for (let i = 0; i < otpInputs.length; i++) {
+    await otpInputs[i].type(otp[i]);
+  }
+
+  // Click "Verify OTP" Button
+  await page.click('button.otpBtn[onclick="validateOtp()"]');
+}
+
 module.exports = {
   solveCaptcha,
   submitForm,
   interceptResponse,
-  SUBMIT_BUTTON_ID
+  SUBMIT_BUTTON_ID,
+  submitOTP
 };

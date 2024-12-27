@@ -5,7 +5,7 @@ const authorize = require('./gmailAuth').authorize;
 const readline = require('readline');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const { interceptor, patterns } = require('puppeteer-extra-plugin-interceptor');
-const { submitForm, SUBMIT_BUTTON_ID } = require('./helperFunction');
+const { submitForm, SUBMIT_BUTTON_ID, submitOTP } = require('./helperFunction');
 const solveCaptcha = require('./helperFunction').solveCaptcha;
 const { listenForOtp } = require('./otpListener');
 const passportWebsiteUrl = "https://forms.zohopublic.eu/EoILisbon/form/FREEAppointmentforPassportServiceatEoILisbon";
@@ -307,48 +307,10 @@ const EMAIL_VALUE = 'gunpreetsinghking7172@gmail.com';
 
     rl.question('Page is ready. Press Enter to continue...', async () => {
       rl.close();
-      // Perform OTP-related steps
-      await page.waitForSelector('input#email_cntct_val', { visible: true });
 
-      // Enter Email
-      await page.evaluate(selector => document.querySelector(selector).value = '', 'input#email_cntct_val');
-      await page.type('input#email_cntct_val', EMAIL_VALUE);
-
-      // Solve CAPTCHA for OTP
-      await page.waitForSelector('#zf-captcha', { visible: true });
-      const otpCaptchaSolution = await solveCaptcha(page);
-      if (otpCaptchaSolution) {
-        await page.evaluate(selector => document.querySelector(selector).value = '', '#verificationcodeTxt');
-        await page.type('#verificationcodeTxt', otpCaptchaSolution);
-      } else {
-        throw new Error('Failed to solve CAPTCHA for OTP');
-      }
-
-      // Click "Get OTP" Button
-      await page.click('button.otpBtn[elname="getOtpBtn"]');
-
-      // Listen for OTP email
-      const otp = await listenForOtp(auth);
-      if (!otp) {
-        throw new Error('Failed to retrieve OTP from email');
-      }
-
-      // Wait for OTP input fields to appear
-      await page.waitForSelector('#otpValueDiv input', { visible: true });
-
-      // Enter OTP
-      const otpInputs = await page.$$('#otpValueDiv input');
-
-      // Enter the OTP digits
-      for (let i = 0; i < otpInputs.length; i++) {
-        await otpInputs[i].type(otp[i]);
-      }
-
-      // Click "Verify OTP" Button
-      await page.click('button.otpBtn[onclick="validateOtp()"]');
-
+      await submitOTP(page, auth);
       // Wait for the swiper to load
-      // await page.waitForSelector('.swiper-wrapper');
+      await page.waitForSelector('#swiperParentDiv');
 
       // Execute custom JavaScript to display all fields
       await page.evaluate((SUBMIT_BUTTON_ID) => {
@@ -358,10 +320,10 @@ const EMAIL_VALUE = 'gunpreetsinghking7172@gmail.com';
           button.style.display = 'none'; // Hide navigation
         });
 
-        const swiperWrapper = document.querySelector('.swiper-wrapper');
+        const swiperParentDiv = document.querySelector('#swiperParentDiv');
         const allSlides = document.querySelectorAll('.swiper-slide');
 
-        if (!swiperWrapper) {
+        if (!swiperParentDiv) {
           console.error('Swiper wrapper not found');
           return;
         }
@@ -389,43 +351,16 @@ const EMAIL_VALUE = 'gunpreetsinghking7172@gmail.com';
           unifiedContainer.appendChild(submitButton);
         }
 
-        let lastFieldWrapper = null; // To keep track of the last fieldWrapper
-
         // Loop through each slide and append fields
         allSlides.forEach((slide) => {
           const formFields = slide.querySelectorAll('.fieldWrapper');
           formFields.forEach(field => {
             unifiedContainer.appendChild(field);
-            lastFieldWrapper = field; // Update the lastFieldWrapper
           });
         });
 
-        // Locate Stripe Iframe(s) and append them
-        // const stripeIframes = document.querySelectorAll('iframe');
-        // stripeIframes.forEach(iframe => {
-        //   const iframeContainer = document.createElement('div');
-        //   iframeContainer.style.cssText = 'margin-top: 10px; border: 1px solid #ddd; padding: 10px;';
-
-        //   const iframeTitle = document.createElement('p');
-        //   iframeTitle.textContent = 'Stripe Card Input';
-        //   iframeTitle.style.fontWeight = 'bold';
-
-        //   iframeContainer.appendChild(iframeTitle);
-        //   iframeContainer.appendChild(iframe);
-        //   unifiedContainer.appendChild(iframeContainer);
-        // });
-
-        // Replace the swiper wrapper
-        document.body.innerHTML = '';
-        document.body.appendChild(unifiedContainer);
-
-        // Body styling for scrolling
-        document.body.style.cssText = `
-        margin: 0;
-        height: 100vh;
-        overflow: hidden;
-        background-color: #f8f9fa;
-        font-family: Arial, sans-serif;`;
+        // Replace swiperParentDiv with the new container
+        swiperParentDiv.replaceWith(unifiedContainer);
         console.log('All fields are now visible');
       }, SUBMIT_BUTTON_ID);
 
