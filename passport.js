@@ -7,7 +7,6 @@ const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const { interceptor, patterns } = require('puppeteer-extra-plugin-interceptor');
 const { submitForm, SUBMIT_BUTTON_ID, submitOTP } = require('./helperFunction');
 const solveCaptcha = require('./helperFunction').solveCaptcha;
-const { listenForOtp } = require('./otpListener');
 const passportWebsiteUrl = "https://forms.zohopublic.eu/EoILisbon/form/FREEAppointmentforPassportServiceatEoILisbon";
 const passportWebsiteUrlTemp = "https://forms.zohopublic.eu/EoILisbon/form/PCCapplicationsbyPOSTwithPrePayment";
 
@@ -308,7 +307,7 @@ const EMAIL_VALUE = 'gunpreetsinghking7172@gmail.com';
     rl.question('Page is ready. Press Enter to continue...', async () => {
       rl.close();
 
-      await submitOTP(page, auth);
+      await submitOTP(page, auth, EMAIL_VALUE);
       // Wait for the swiper to load
       await page.waitForSelector('#swiperParentDiv');
 

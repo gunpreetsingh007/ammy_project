@@ -1,5 +1,6 @@
 require('dotenv').config();
 const axios = require('axios');
+const { listenForOtp } = require('./otpListener');
 const CAPTCHA_API_KEY = process.env.CAPTCHA_API_KEY;
 const CAPTCHA_USER_ID = process.env.CAPTCHA_USER_ID; // Add your TrueCaptcha user ID to the environment variables
 const SUBMIT_BUTTON_ID = 'visible-submit-button-007'
@@ -31,7 +32,7 @@ async function solveCaptcha(page) {
 
     const response = await axios.post('https://api.apitruecaptcha.org/one/gettext', params);
 
-    const solution = response.data.result;
+    const solution = response.data.result?.toUpperCase();
 
     return solution;
   } catch (error) {
@@ -165,13 +166,13 @@ async function interceptResponse(response, newResponse) {
   });
 }
 
-async function submitOTP(page, auth) {
+async function submitOTP(page, auth, email) {
   // Perform OTP-related steps
   await page.waitForSelector('input#email_cntct_val', { visible: true });
 
   // Enter Email
   await page.evaluate(selector => document.querySelector(selector).value = '', 'input#email_cntct_val');
-  await page.type('input#email_cntct_val', EMAIL_VALUE);
+  await page.type('input#email_cntct_val', email);
 
   // Solve CAPTCHA for OTP
   await page.waitForSelector('#zf-captcha', { visible: true });
