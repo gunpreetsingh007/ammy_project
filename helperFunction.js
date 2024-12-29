@@ -104,8 +104,8 @@ const submitForm = async (page, steps, clickSubmitButton) => {
 
   if (clickSubmitButton) {
     await page.click(`#${SUBMIT_BUTTON_ID}`);
+    console.log('Clicked "Submit" button.');
   }
-  console.log('Clicked "Submit" button.');
 };
 
 // Function to click the visible "Next" or "Submit" button
