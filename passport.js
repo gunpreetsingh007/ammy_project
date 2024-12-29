@@ -54,15 +54,15 @@ const EMAIL_VALUE = 'gunpreetsinghking7172@gmail.com';
     }
 
     // Evaluate the screen dimensions in the page context
-    const { width, height } = await page.evaluate(() => {
-      return {
-        width: window.screen.width,
-        height: window.screen.height,
-      };
-    });
+    // const { width, height } = await page.evaluate(() => {
+    //   return {
+    //     width: window.screen.width,
+    //     height: window.screen.height,
+    //   };
+    // });
 
     // Set the viewport to the screen dimensions
-    await page.setViewport({ width, height });
+    // await page.setViewport({ width, height });
 
     // const client = await page.createCDPSession();
     // await client.send('Fetch.enable', {
