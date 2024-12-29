@@ -69,7 +69,7 @@ const isElementVisibleRecursive = async (elementHandle) => {
   });
 };
 
-const submitForm = async (page, steps) => {
+const submitForm = async (page, steps, clickSubmitButton) => {
 
   // Attempt to fill all fields initially
   for (const step of steps) {
@@ -102,7 +102,9 @@ const submitForm = async (page, steps) => {
     }
   }
 
-  await page.click(`#${SUBMIT_BUTTON_ID}`);
+  if (clickSubmitButton) {
+    await page.click(`#${SUBMIT_BUTTON_ID}`);
+  }
   console.log('Clicked "Submit" button.');
 };
 
