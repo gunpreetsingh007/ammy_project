@@ -342,13 +342,6 @@ const EMAIL_VALUE = 'gunpreetsinghking7172@gmail.com';
         background: #fff;
         position: relative;`;
 
-        const submitButton = document.querySelector('button.zfbtnSubmit');
-        if (submitButton) {
-          submitButton.style.display = 'block'; // Show the submit button
-          submitButton.id = SUBMIT_BUTTON_ID;
-          // append the submit button to the beginning of the container
-          unifiedContainer.appendChild(submitButton);
-        }
 
         // Loop through each slide and append fields
         allSlides.forEach((slide) => {
@@ -357,6 +350,14 @@ const EMAIL_VALUE = 'gunpreetsinghking7172@gmail.com';
             unifiedContainer.appendChild(field);
           });
         });
+
+        const lastElement = unifiedContainer.lastElementChild;
+        // submit button in the last element
+        const submitButton = lastElement.querySelector('button.zfbtnSubmit');
+        if (submitButton) {
+          submitButton.id = SUBMIT_BUTTON_ID;
+          submitButton.style.display = 'block';
+        }
 
         // Replace swiperParentDiv with the new container
         swiperParentDiv.replaceWith(unifiedContainer);
