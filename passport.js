@@ -312,6 +312,11 @@ const OTP_VALUE = '123456';
       // Wait for the swiper to load
       await page.waitForSelector('#swiperParentDiv');
 
+      if (steps.some(step => step.iframeSelector)) {
+        // Wait for iframe(s) to load
+        await page.waitForSelector('iframe');
+      }
+
       // Execute custom JavaScript to display all fields
       await page.evaluate((SUBMIT_BUTTON_ID) => {
         // Hide navigation buttons
