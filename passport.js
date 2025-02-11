@@ -145,8 +145,8 @@ const OTP_VALUE = '123456';
       //   completed: false,
       //   fillInitially: true,
       //   action: async (context) => {
-      //     await context.evaluate(selector => document.querySelector(selector).value = CARD_NAME_VALUE, 'input[elname="stripeCardName"]');
-      //     // await context.type('input[elname="stripeCardName"]', CARD_NAME_VALUE);
+      //     await context.evaluate(selector => document.querySelector(selector).value = '', 'input[elname="stripeCardName"]');
+      //     await context.type('input[elname="stripeCardName"]', CARD_NAME_VALUE);
       //   }
       // },
       {
@@ -155,8 +155,8 @@ const OTP_VALUE = '123456';
         completed: false,
         fillInitially: true,
         action: async (context) => {
-          await context.evaluate(selector => document.querySelector(selector).value = CARD_NUMBER_VALUE, 'input[name="cardnumber"]');
-          // await context.type('input[name="cardnumber"]', CARD_NUMBER_VALUE);
+          await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="cardnumber"]');
+          await context.type('input[name="cardnumber"]', CARD_NUMBER_VALUE);
         },
         iframeSelector: 'iframe' // Search for any iframe
       },
@@ -166,8 +166,8 @@ const OTP_VALUE = '123456';
         completed: false,
         fillInitially: true,
         action: async (context) => {
-          await context.evaluate(selector => document.querySelector(selector).value = EXP_DATE_VALUE, 'input[name="exp-date"]');
-          // await context.type('input[name="exp-date"]', EXP_DATE_VALUE);
+          await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="exp-date"]');
+          await context.type('input[name="exp-date"]', EXP_DATE_VALUE);
         },
         iframeSelector: 'iframe' // Search for any iframe
       },
@@ -177,8 +177,8 @@ const OTP_VALUE = '123456';
         completed: false,
         fillInitially: true,
         action: async (context) => {
-          await context.evaluate(selector => document.querySelector(selector).value = CVC_VALUE, 'input[name="cvc"]');
-          // await context.type('input[name="cvc"]', CVC_VALUE);
+          await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="cvc"]');
+          await context.type('input[name="cvc"]', CVC_VALUE);
         },
         iframeSelector: 'iframe' // Search for any iframe
       },
@@ -311,11 +311,6 @@ const OTP_VALUE = '123456';
       await submitOTP({page, email: EMAIL_VALUE, otp: OTP_VALUE});
       // Wait for the swiper to load
       await page.waitForSelector('#swiperParentDiv');
-
-      if (steps.some(step => step.iframeSelector)) {
-        // Wait for iframe(s) to load
-        await page.waitForSelector('iframe');
-      }
 
       // Execute custom JavaScript to display all fields
       await page.evaluate((SUBMIT_BUTTON_ID) => {
