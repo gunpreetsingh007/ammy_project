@@ -129,24 +129,24 @@ const OTP_VALUE = '123456';
 
     // Define the steps with selectors and actions
     const steps = [
-      {
-        name: 'Application Number',
-        selector: 'input[name="SingleLine1"]',
-        completed: false,
-        fillInitially: true,
-        action: async (context) => {
-          await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="SingleLine1"]');
-          await context.type('input[name="SingleLine1"]', APPLICATION_NO_VALUE);
-        }
-      },
+      // {
+      //   name: 'Application Number',
+      //   selector: 'input[name="SingleLine1"]',
+      //   completed: false,
+      //   fillInitially: true,
+      //   action: async (context) => {
+      //     await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="SingleLine1"]');
+      //     await context.type('input[name="SingleLine1"]', APPLICATION_NO_VALUE);
+      //   }
+      // },
       {
         name: 'Card Name',
         selector: 'input[elname="stripeCardName"]',
         completed: false,
         fillInitially: true,
         action: async (context) => {
-          await context.evaluate(selector => document.querySelector(selector).value = '', 'input[elname="stripeCardName"]');
-          await context.type('input[elname="stripeCardName"]', CARD_NAME_VALUE);
+          await context.evaluate(selector => document.querySelector(selector).value = CARD_NAME_VALUE, 'input[elname="stripeCardName"]');
+          // await context.type('input[elname="stripeCardName"]', CARD_NAME_VALUE);
         }
       },
       {
@@ -155,8 +155,8 @@ const OTP_VALUE = '123456';
         completed: false,
         fillInitially: true,
         action: async (context) => {
-          await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="cardnumber"]');
-          await context.type('input[name="cardnumber"]', CARD_NUMBER_VALUE);
+          await context.evaluate(selector => document.querySelector(selector).value = CARD_NUMBER_VALUE, 'input[name="cardnumber"]');
+          // await context.type('input[name="cardnumber"]', CARD_NUMBER_VALUE);
         },
         iframeSelector: 'iframe' // Search for any iframe
       },
@@ -166,8 +166,8 @@ const OTP_VALUE = '123456';
         completed: false,
         fillInitially: true,
         action: async (context) => {
-          await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="exp-date"]');
-          await context.type('input[name="exp-date"]', EXP_DATE_VALUE);
+          await context.evaluate(selector => document.querySelector(selector).value = EXP_DATE_VALUE, 'input[name="exp-date"]');
+          // await context.type('input[name="exp-date"]', EXP_DATE_VALUE);
         },
         iframeSelector: 'iframe' // Search for any iframe
       },
@@ -177,112 +177,112 @@ const OTP_VALUE = '123456';
         completed: false,
         fillInitially: true,
         action: async (context) => {
-          await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="cvc"]');
-          await context.type('input[name="cvc"]', CVC_VALUE);
+          await context.evaluate(selector => document.querySelector(selector).value = CVC_VALUE, 'input[name="cvc"]');
+          // await context.type('input[name="cvc"]', CVC_VALUE);
         },
         iframeSelector: 'iframe' // Search for any iframe
       },
-      {
-        name: 'Postal Code',
-        selector: 'input[name="postal"]',
-        completed: false,
-        fillInitially: true,
-        action: async (context) => {
-          await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="postal"]');
-          await context.type('input[name="postal"]', POSTAL_VALUE);
-        },
-        iframeSelector: 'iframe' // Search for any iframe
-      },
-      {
-        name: 'Date Picker',
-        selector: 'input[name="Date"]',
-        completed: false,
-        fillInitially: true,
-        action: async (context) => {
-          await context.evaluate(
-            ({ desiredYear, desiredMonth, desiredDay }) => {
-              // Construct the desired date
-              const desiredDate = new Date(desiredYear, desiredMonth - 1, desiredDay);
+      // {
+      //   name: 'Postal Code',
+      //   selector: 'input[name="postal"]',
+      //   completed: false,
+      //   fillInitially: true,
+      //   action: async (context) => {
+      //     await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="postal"]');
+      //     await context.type('input[name="postal"]', POSTAL_VALUE);
+      //   },
+      //   iframeSelector: 'iframe' // Search for any iframe
+      // },
+      // {
+      //   name: 'Date Picker',
+      //   selector: 'input[name="Date"]',
+      //   completed: false,
+      //   fillInitially: true,
+      //   action: async (context) => {
+      //     await context.evaluate(
+      //       ({ desiredYear, desiredMonth, desiredDay }) => {
+      //         // Construct the desired date
+      //         const desiredDate = new Date(desiredYear, desiredMonth - 1, desiredDay);
 
-              // Get the date input field
-              const dateInput = document.querySelector('#Date-date');
+      //         // Get the date input field
+      //         const dateInput = document.querySelector('#Date-date');
 
-              if (dateInput) {
-                // Check if jQuery UI datepicker is available
-                if (typeof $(dateInput).datepicker === 'function') {
-                  // Set the date using the datepicker's method
-                  $(dateInput).datepicker('setDate', desiredDate);
+      //         if (dateInput) {
+      //           // Check if jQuery UI datepicker is available
+      //           if (typeof $(dateInput).datepicker === 'function') {
+      //             // Set the date using the datepicker's method
+      //             $(dateInput).datepicker('setDate', desiredDate);
 
-                  // Trigger change events to ensure any listeners are notified
-                  $(dateInput).trigger('input');
-                  $(dateInput).trigger('change');
-                } else {
-                  // Fallback if jQuery UI is not available
-                  dateInput.value = desiredDate.toLocaleDateString('en-GB', {
-                    day: '2-digit',
-                    month: 'short',
-                    year: 'numeric',
-                  });
+      //             // Trigger change events to ensure any listeners are notified
+      //             $(dateInput).trigger('input');
+      //             $(dateInput).trigger('change');
+      //           } else {
+      //             // Fallback if jQuery UI is not available
+      //             dateInput.value = desiredDate.toLocaleDateString('en-GB', {
+      //               day: '2-digit',
+      //               month: 'short',
+      //               year: 'numeric',
+      //             });
 
-                  // Manually dispatch events
-                  dateInput.dispatchEvent(new Event('input', { bubbles: true }));
-                  dateInput.dispatchEvent(new Event('change', { bubbles: true }));
-                }
-              }
-            },
-            { desiredYear, desiredMonth, desiredDay } // Pass global variables as arguments
-          );
-        }
-      },
-      {
-        name: 'Service Type',
-        selector: 'select[name="Dropdown"]',
-        completed: false,
-        fillInitially: true,
-        action: async (context) => {
-          await context.select('select[name="Dropdown"]', DROPDOWN_VALUE);
-        }
-      },
-      {
-        name: 'Passport Number',
-        selector: 'input[name="SingleLine"]',
-        completed: false,
-        fillInitially: true,
-        action: async (context) => {
-          await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="SingleLine"]');
-          await context.type('input[name="SingleLine"]', PASSPORT_NO_VALUE);
-        }
-      },
-      {
-        name: 'First Name',
-        selector: 'input[elname="First"]',
-        completed: false,
-        fillInitially: true,
-        action: async (context) => {
-          await context.evaluate(selector => document.querySelector(selector).value = '', 'input[elname="First"]');
-          await context.type('input[elname="First"]', FIRST_NAME_VALUE);
-        }
-      },
-      {
-        name: 'Last Name',
-        selector: 'input[elname="Last"]',
-        completed: false,
-        fillInitially: true,
-        action: async (context) => {
-          await context.evaluate(selector => document.querySelector(selector).value = '', 'input[elname="Last"]');
-          await context.type('input[elname="Last"]', LAST_NAME_VALUE);
-        }
-      },
-      {
-        name: 'Phone Number',
-        selector: 'input[name="PhoneNumber"]',
-        completed: false,
-        fillInitially: true,
-        action: async (context) => {
-          await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="PhoneNumber"]');
-          await context.type('input[name="PhoneNumber"]', PHONE_NUMBER_VALUE);
-        }
-      },
+      //             // Manually dispatch events
+      //             dateInput.dispatchEvent(new Event('input', { bubbles: true }));
+      //             dateInput.dispatchEvent(new Event('change', { bubbles: true }));
+      //           }
+      //         }
+      //       },
+      //       { desiredYear, desiredMonth, desiredDay } // Pass global variables as arguments
+      //     );
+      //   }
+      // },
+      // {
+      //   name: 'Service Type',
+      //   selector: 'select[name="Dropdown"]',
+      //   completed: false,
+      //   fillInitially: true,
+      //   action: async (context) => {
+      //     await context.select('select[name="Dropdown"]', DROPDOWN_VALUE);
+      //   }
+      // },
+      // {
+      //   name: 'Passport Number',
+      //   selector: 'input[name="SingleLine"]',
+      //   completed: false,
+      //   fillInitially: true,
+      //   action: async (context) => {
+      //     await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="SingleLine"]');
+      //     await context.type('input[name="SingleLine"]', PASSPORT_NO_VALUE);
+      //   }
+      // },
+      // {
+      //   name: 'First Name',
+      //   selector: 'input[elname="First"]',
+      //   completed: false,
+      //   fillInitially: true,
+      //   action: async (context) => {
+      //     await context.evaluate(selector => document.querySelector(selector).value = '', 'input[elname="First"]');
+      //     await context.type('input[elname="First"]', FIRST_NAME_VALUE);
+      //   }
+      // },
+      // {
+      //   name: 'Last Name',
+      //   selector: 'input[elname="Last"]',
+      //   completed: false,
+      //   fillInitially: true,
+      //   action: async (context) => {
+      //     await context.evaluate(selector => document.querySelector(selector).value = '', 'input[elname="Last"]');
+      //     await context.type('input[elname="Last"]', LAST_NAME_VALUE);
+      //   }
+      // },
+      // {
+      //   name: 'Phone Number',
+      //   selector: 'input[name="PhoneNumber"]',
+      //   completed: false,
+      //   fillInitially: true,
+      //   action: async (context) => {
+      //     await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="PhoneNumber"]');
+      //     await context.type('input[name="PhoneNumber"]', PHONE_NUMBER_VALUE);
+      //   }
+      // },
       {
         name: 'CAPTCHA',
         selector: '#verificationcodeTxt',
@@ -353,6 +353,7 @@ const OTP_VALUE = '123456';
         });
 
         const lastElement = unifiedContainer.lastElementChild;
+        unifiedContainer.insertBefore(lastElement, unifiedContainer.firstChild);
         // submit button in the last element
         const submitButton = lastElement.querySelector('button.zfbtnSubmit');
         if (submitButton) {
@@ -365,7 +366,7 @@ const OTP_VALUE = '123456';
         console.log('All fields are now visible');
       }, SUBMIT_BUTTON_ID);
 
-      await submitForm(page, steps, true);
+      await submitForm(page, steps, false);
     });
 
   } catch (error) {
