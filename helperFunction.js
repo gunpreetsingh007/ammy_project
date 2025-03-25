@@ -79,25 +79,24 @@ const submitForm = async (page, steps, clickSubmitButton) => {
       let context = page;
 
       if (step.iframeSelector) {
-        if (!step.iframeContext) {
-          await page.waitForSelector(step.iframeSelector);
-          const iframes = await page.$$(step.iframeSelector);
-          for (const iframeElement of iframes) {
-            const iframe = await iframeElement.contentFrame();
-            const elementHandle = await iframe.$(step.selector);
-            if (elementHandle) {
-              console.log(`Found element "${step.name}" in iframe.`);
-              step.iframeContext = iframe;
-              break;
-            }
+        await page.waitForSelector(step.iframeSelector);
+        const iframes = await page.$$(step.iframeSelector);
+        for (const iframeElement of iframes) {
+          const iframe = await iframeElement.contentFrame();
+          const elementHandle = await iframe.$(step.selector);
+          if (elementHandle) {
+            console.log(`Found element "${step.name}" in iframe.`);
+            await step.action(iframe);
           }
         }
-        context = step.iframeContext || context;
+        step.completed = true;
+        console.log(`Filled: ${step.name}`);
       }
-
-      await step.action(context);
-      step.completed = true;
-      console.log(`Filled: ${step.name}`);
+      else {
+        await step.action(context)
+        step.completed = true;
+        console.log(`Filled: ${step.name}`);
+      }
 
     } catch (error) {
       console.warn(`Could not fill the field "${step.name}" at this time. Will attempt later if possible.`);
