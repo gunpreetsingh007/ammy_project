@@ -5,7 +5,7 @@ const authorize = require('./gmailAuth').authorize;
 const readline = require('readline');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const { interceptor, patterns } = require('puppeteer-extra-plugin-interceptor');
-const { submitForm, SUBMIT_BUTTON_ID, submitOTP } = require('./helperFunction');
+const { submitForm, SUBMIT_BUTTON_ID, submitOTP, displayAllFields } = require('./helperFunction');
 const solveCaptcha = require('./helperFunction').solveCaptcha;
 const passportWebsiteUrl = "https://forms.zohopublic.eu/EoILisbon/form/FREEAppointmentforPassportServiceatEoILisbon";
 const passportWebsiteUrlTemp = "https://forms.zohopublic.eu/EoILisbon/form/PCCapplicationsbyPOSTwithPrePayment";
@@ -309,63 +309,7 @@ const EMAIL_VALUE = 'gunpreetsinghking7172@gmail.com';
       rl.close();
 
       await submitOTP({page, email: EMAIL_VALUE, auth});
-      // Wait for the swiper to load
-      await page.waitForSelector('#swiperParentDiv');
-
-      // Execute custom JavaScript to display all fields
-      await page.evaluate((SUBMIT_BUTTON_ID) => {
-        // Hide navigation buttons
-        const navButtons = document.querySelectorAll('.zf-next, .zf-prev');
-        navButtons.forEach(button => {
-          button.style.display = 'none'; // Hide navigation
-        });
-
-        const swiperParentDiv = document.querySelector('#swiperParentDiv');
-        const allSlides = document.querySelectorAll('.swiper-slide');
-
-        if (!swiperParentDiv) {
-          console.error('Swiper wrapper not found');
-          return;
-        }
-
-        // Create a scrollable container to hold all form fields
-        const unifiedContainer = document.createElement('div');
-        unifiedContainer.id = 'all-fields-container';
-        unifiedContainer.style.cssText = `
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-        height: auto;
-        max-height: 90vh;
-        overflow-y: auto;
-        padding: 20px;
-        border: 1px solid #ccc;
-        background: #fff;
-        position: relative;`;
-
-
-        // Loop through each slide and append fields
-        allSlides.forEach((slide) => {
-          const formFields = slide.querySelectorAll('.fieldWrapper');
-          formFields.forEach(field => {
-            unifiedContainer.appendChild(field);
-          });
-        });
-
-        const lastElement = unifiedContainer.lastElementChild;
-        unifiedContainer.insertBefore(lastElement, unifiedContainer.firstChild);
-        // submit button in the last element
-        const submitButton = lastElement.querySelector('button.zfbtnSubmit');
-        if (submitButton) {
-          submitButton.id = SUBMIT_BUTTON_ID;
-          submitButton.style.display = 'block';
-        }
-
-        // Replace swiperParentDiv with the new container
-        swiperParentDiv.replaceWith(unifiedContainer);
-        console.log('All fields are now visible');
-      }, SUBMIT_BUTTON_ID);
-
+      await displayAllFields(page, SUBMIT_BUTTON_ID);
       await submitForm(page, steps, false);
     });
 
