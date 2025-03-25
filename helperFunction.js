@@ -80,11 +80,13 @@ const submitForm = async (page, steps, clickSubmitButton) => {
 
       if (step.iframeSelector) {
         if (!step.iframeContext) {
+          await page.waitForSelector(step.iframeSelector);
           const iframes = await page.$$(step.iframeSelector);
           for (const iframeElement of iframes) {
             const iframe = await iframeElement.contentFrame();
             const elementHandle = await iframe.$(step.selector);
             if (elementHandle) {
+              console.log(`Found element "${step.name}" in iframe.`);
               step.iframeContext = iframe;
               break;
             }
