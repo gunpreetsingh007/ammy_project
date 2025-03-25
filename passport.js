@@ -158,7 +158,7 @@ const EMAIL_VALUE = 'gunpreetsinghking7172@gmail.com';
           await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="cardnumber"]');
           await context.type('input[name="cardnumber"]', CARD_NUMBER_VALUE);
         },
-        iframeSelector: 'iframe' // Search for any iframe
+        // iframeSelector: 'iframe' // Search for any iframe
       },
       {
         name: 'Expiration Date',
@@ -169,7 +169,7 @@ const EMAIL_VALUE = 'gunpreetsinghking7172@gmail.com';
           await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="exp-date"]');
           await context.type('input[name="exp-date"]', EXP_DATE_VALUE);
         },
-        iframeSelector: 'iframe' // Search for any iframe
+        // iframeSelector: 'iframe' // Search for any iframe
       },
       {
         name: 'CVC',
@@ -180,7 +180,7 @@ const EMAIL_VALUE = 'gunpreetsinghking7172@gmail.com';
           await context.evaluate(selector => document.querySelector(selector).value = '', 'input[name="cvc"]');
           await context.type('input[name="cvc"]', CVC_VALUE);
         },
-        iframeSelector: 'iframe' // Search for any iframe
+        // iframeSelector: 'iframe' // Search for any iframe
       },
       // {
       //   name: 'Postal Code',
