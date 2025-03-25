@@ -139,16 +139,16 @@ const EMAIL_VALUE = 'gunpreetsinghking7172@gmail.com';
       //     await context.type('input[name="SingleLine1"]', APPLICATION_NO_VALUE);
       //   }
       // },
-      // {
-      //   name: 'Card Name',
-      //   selector: 'input[elname="stripeCardName"]',
-      //   completed: false,
-      //   fillInitially: true,
-      //   action: async (context) => {
-      //     await context.evaluate(selector => document.querySelector(selector).value = '', 'input[elname="stripeCardName"]');
-      //     await context.type('input[elname="stripeCardName"]', CARD_NAME_VALUE);
-      //   }
-      // },
+      {
+        name: 'Card Name',
+        selector: 'input[elname="stripeCardName"]',
+        completed: false,
+        fillInitially: true,
+        action: async (context) => {
+          await context.evaluate(selector => document.querySelector(selector).value = '', 'input[elname="stripeCardName"]');
+          await context.type('input[elname="stripeCardName"]', CARD_NAME_VALUE);
+        }
+      },
       {
         name: 'Card Number',
         selector: 'input[name="cardnumber"]',
