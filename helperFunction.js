@@ -170,32 +170,32 @@ async function interceptResponse(response, newResponse) {
   });
 }
 
-async function submitOTP({page, auth, email, otp}) {
+async function submitOTP({page, auth, email}) {
   // Perform OTP-related steps
-  // await page.waitForSelector('input#email_cntct_val', { visible: true });
+  await page.waitForSelector('input#email_cntct_val', { visible: true });
 
   // Enter Email
-  // await page.evaluate(selector => document.querySelector(selector).value = '', 'input#email_cntct_val');
-  // await page.type('input#email_cntct_val', email);
+  await page.evaluate(selector => document.querySelector(selector).value = '', 'input#email_cntct_val');
+  await page.type('input#email_cntct_val', email);
 
   // Solve CAPTCHA for OTP
-  // await page.waitForSelector('#zf-captcha', { visible: true });
-  // const otpCaptchaSolution = await solveCaptcha(page);
-  // if (otpCaptchaSolution) {
-  //   await page.evaluate(selector => document.querySelector(selector).value = '', '#verificationcodeTxt');
-  //   await page.type('#verificationcodeTxt', otpCaptchaSolution);
-  // } else {
-  //   throw new Error('Failed to solve CAPTCHA for OTP');
-  // }
+  await page.waitForSelector('#zf-captcha', { visible: true });
+  const otpCaptchaSolution = await solveCaptcha(page);
+  if (otpCaptchaSolution) {
+    await page.evaluate(selector => document.querySelector(selector).value = '', '#verificationcodeTxt');
+    await page.type('#verificationcodeTxt', otpCaptchaSolution);
+  } else {
+    throw new Error('Failed to solve CAPTCHA for OTP');
+  }
 
   // Click "Get OTP" Button
-  // await page.click('button.otpBtn[elname="getOtpBtn"]');
+  await page.click('button.otpBtn[elname="getOtpBtn"]');
 
   // Listen for OTP email
-  // const otp = await listenForOtp(auth);
-  // if (!otp) {
-  //   throw new Error('Failed to retrieve OTP from email');
-  // }
+  const otp = await listenForOtp(auth);
+  if (!otp) {
+    throw new Error('Failed to retrieve OTP from email');
+  }
 
   // Wait for OTP input fields to appear
   await page.waitForSelector('#otpValueDiv input', { visible: true });

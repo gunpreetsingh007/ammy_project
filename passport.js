@@ -26,11 +26,11 @@ const desiredYear = 2024;
 const desiredMonth = 12;
 const desiredDay = 31;
 const EMAIL_VALUE = 'gunpreetsinghking7172@gmail.com';
-const OTP_VALUE = '123456';
+// const OTP_VALUE = '123456';
 
 (async () => {
   try {
-    // const auth = await authorize();
+    const auth = await authorize();
 
     const puppeteerExtra = addExtra(puppeteer);
     puppeteerExtra.use(StealthPlugin());
@@ -308,7 +308,7 @@ const OTP_VALUE = '123456';
     rl.question('Page is ready. Press Enter to continue...', async () => {
       rl.close();
 
-      await submitOTP({page, email: EMAIL_VALUE, otp: OTP_VALUE});
+      await submitOTP({page, email: EMAIL_VALUE, auth});
       // Wait for the swiper to load
       await page.waitForSelector('#swiperParentDiv');
 
