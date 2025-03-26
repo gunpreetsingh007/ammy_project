@@ -72,36 +72,35 @@ const isElementVisibleRecursive = async (elementHandle) => {
 const submitForm = async (page, steps, clickSubmitButton) => {
 
   // Attempt to fill all fields initially
-  await Promise.all(steps.map(async (step) => {
-    if (step.completed) return;
-    if (typeof step.fillInitially === "boolean" && !step.fillInitially) return;
+  for (const step of steps) {
+    if (step.completed) continue;
+    if (typeof step.fillInitially === "boolean" && !step.fillInitially) continue;
     try {
       let context = page;
 
       if (step.iframeSelector) {
-        await page.waitForSelector(step.iframeSelector);
-        const iframes = await page.$$(step.iframeSelector);
-        for (const iframeElement of iframes) {
-          const iframe = await iframeElement.contentFrame();
-          const elementHandle = await iframe.$(step.selector);
-          if (elementHandle) {
-            console.log(`Found element "${step.name}" in iframe.`);
-            await step.action(iframe);
+        if (!step.iframeContext) {
+          const iframes = await page.$$(step.iframeSelector);
+          for (const iframeElement of iframes) {
+            const iframe = await iframeElement.contentFrame();
+            const elementHandle = await iframe.$(step.selector);
+            if (elementHandle) {
+              step.iframeContext = iframe;
+              break;
+            }
           }
         }
-        step.completed = true;
-        console.log(`Filled: ${step.name}`);
+        context = step.iframeContext || context;
       }
-      else {
-        await step.action(context)
-        step.completed = true;
-        console.log(`Filled: ${step.name}`);
-      }
+
+      await step.action(context);
+      step.completed = true;
+      console.log(`Filled: ${step.name}`);
 
     } catch (error) {
       console.warn(`Could not fill the field "${step.name}" at this time. Will attempt later if possible.`);
     }
-  }));
+  }
 
   const allStepsCompleted = steps.every(step => step.completed);
 
