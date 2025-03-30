@@ -69,9 +69,12 @@ const isElementVisibleRecursive = async (elementHandle) => {
   });
 };
 
-const submitForm = async (page, steps, clickSubmitButton) => {
+const submitForm = async (page, steps, clickSubmitButton, captchaExist=false) => {
 
   // Attempt to fill all fields initially
+  if(captchaExist) {
+    solveCaptchaInForm(page);
+  }
   for (const step of steps) {
     if (step.completed) continue;
     if (typeof step.fillInitially === "boolean" && !step.fillInitially) continue;
@@ -79,6 +82,7 @@ const submitForm = async (page, steps, clickSubmitButton) => {
       let context = page;
 
       if (step.iframeSelector) {
+        await page.waitForSelector(step.iframeSelector);
         if (!step.iframeContext) {
           const iframes = await page.$$(step.iframeSelector);
           for (const iframeElement of iframes) {
@@ -170,6 +174,16 @@ async function interceptResponse(response, newResponse) {
   });
 }
 
+async function solveCaptchaInForm(page) {
+  const otpCaptchaSolution = await solveCaptcha(page);
+  if (otpCaptchaSolution) {
+    await page.evaluate(selector => document.querySelector(selector).value = '', '#verificationcodeTxt');
+    await page.type('#verificationcodeTxt', otpCaptchaSolution);
+  } else {
+    throw new Error('Failed to solve CAPTCHA for OTP');
+  }
+}
+
 async function submitOTP({page, auth, email}) {
   // Perform OTP-related steps
   await page.waitForSelector('input#email_cntct_val', { visible: true });
@@ -180,13 +194,7 @@ async function submitOTP({page, auth, email}) {
 
   // Solve CAPTCHA for OTP
   await page.waitForSelector('#zf-captcha', { visible: true });
-  const otpCaptchaSolution = await solveCaptcha(page);
-  if (otpCaptchaSolution) {
-    await page.evaluate(selector => document.querySelector(selector).value = '', '#verificationcodeTxt');
-    await page.type('#verificationcodeTxt', otpCaptchaSolution);
-  } else {
-    throw new Error('Failed to solve CAPTCHA for OTP');
-  }
+  await solveCaptchaInForm(page);
 
   // Click "Get OTP" Button
   await page.click('button.otpBtn[elname="getOtpBtn"]');
@@ -214,6 +222,7 @@ async function submitOTP({page, auth, email}) {
 
 async function displayAllFields(page, submitButtonId) {
   await page.waitForSelector('#swiperParentDiv');
+  await page.waitForSelector('iframe');
   await page.evaluate((SUBMIT_BUTTON_ID) => {
     // Hide navigation buttons
     const navButtons = document.querySelectorAll('.zf-next, .zf-prev');
