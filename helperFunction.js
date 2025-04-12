@@ -71,10 +71,10 @@ const isElementVisibleRecursive = async (elementHandle) => {
 
 const submitForm = async (page, steps, clickSubmitButton, captchaExist=false) => {
 
-  // Attempt to fill all fields initially
   if(captchaExist) {
     solveCaptchaInForm(page);
   }
+  // Attempt to fill all fields initially
   for (const step of steps) {
     if (step.completed) continue;
     if (typeof step.fillInitially === "boolean" && !step.fillInitially) continue;

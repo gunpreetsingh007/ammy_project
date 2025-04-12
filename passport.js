@@ -283,21 +283,21 @@ const EMAIL_VALUE = 'gunpreetsinghking7172@gmail.com';
       //     await context.type('input[name="PhoneNumber"]', PHONE_NUMBER_VALUE);
       //   }
       // },
-      {
-        name: 'CAPTCHA',
-        selector: '#verificationcodeTxt',
-        completed: false,
-        fillInitially: true,
-        action: async (context) => {
-          const captchaSolution = await solveCaptcha(context);
-          if (captchaSolution) {
-            await context.evaluate(selector => document.querySelector(selector).value = '', '#verificationcodeTxt');
-            await context.type('#verificationcodeTxt', captchaSolution);
-          } else {
-            throw new Error('Failed to solve CAPTCHA');
-          }
-        }
-      }
+      // {
+      //   name: 'CAPTCHA',
+      //   selector: '#verificationcodeTxt',
+      //   completed: false,
+      //   fillInitially: true,
+      //   action: async (context) => {
+      //     const captchaSolution = await solveCaptcha(context);
+      //     if (captchaSolution) {
+      //       await context.evaluate(selector => document.querySelector(selector).value = '', '#verificationcodeTxt');
+      //       await context.type('#verificationcodeTxt', captchaSolution);
+      //     } else {
+      //       throw new Error('Failed to solve CAPTCHA');
+      //     }
+      //   }
+      // }
     ];
 
     const rl = readline.createInterface({
@@ -310,7 +310,7 @@ const EMAIL_VALUE = 'gunpreetsinghking7172@gmail.com';
 
       await submitOTP({page, email: EMAIL_VALUE, auth});
       await displayAllFields(page, SUBMIT_BUTTON_ID);
-      await submitForm(page, steps, false);
+      await submitForm(page, steps, false, true);
     });
 
   } catch (error) {
