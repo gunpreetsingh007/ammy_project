@@ -297,7 +297,43 @@ const EMAIL_VALUE = 'gunpreetsinghking7172@gmail.com';
       //       throw new Error('Failed to solve CAPTCHA');
       //     }
       //   }
-      // }
+      // },
+      {
+        name: 'Arithmetic CAPTCHA',
+        selector: 'input[name="Number"]', // Selector for the input field
+        completed: false,
+        fillInitially: true, // Assuming this should be filled initially
+        action: async (context) => {
+          // Find the label containing the question
+          const questionText = await context.$eval('#Number-li .fieldLabelTxt', el => el.textContent.trim());
+
+          // Extract the arithmetic expression (adjust regex if needed)
+          const match = questionText.match(/How much is (.*)\?/i);
+          if (!match || !match[1]) {
+            throw new Error('Could not extract arithmetic expression from: ' + questionText);
+          }
+          const expression = match[1].trim();
+
+          // Safely evaluate the expression
+          let result;
+          try {
+            // Using Function constructor for safer evaluation than direct eval()
+            result = new Function(`return ${expression}`)();
+            console.log(`Calculated result for "${expression}" is: ${result}`);
+          } catch (e) {
+            throw new Error(`Failed to evaluate expression "${expression}": ${e.message}`);
+          }
+
+          // Find the input field and set its value
+          const inputSelector = 'input[name="Number"]';
+          await context.$eval(inputSelector, (el, value) => {
+            el.value = value;
+            // Optionally trigger change/input events if needed by the page
+            // el.dispatchEvent(new Event('input', { bubbles: true }));
+            // el.dispatchEvent(new Event('change', { bubbles: true }));
+          }, result.toString()); // Ensure result is a string
+        }
+      },
     ];
 
     const rl = readline.createInterface({
