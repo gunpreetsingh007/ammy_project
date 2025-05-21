@@ -4,58 +4,51 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-/**
- * Extract OTP from the email body.
- *
- * @param {string} emailBody The body of the email.
- */
 function extractOtp(emailBody) {
-    const otpRegex = /\b\d{6}\b/; // Adjust the regex based on your OTP format
+    const otpRegex = /\b\d{6}\b/;
     const match = emailBody.match(otpRegex);
     return match ? match[0] : null;
 }
 
-/**
- * Listen for new OTP emails and extract the OTP.
- */
-async function listenForOtp(auth) {
+async function listenForOtp(auth, toEmail = '') {
     const gmail = google.gmail({ version: 'v1', auth });
 
-    console.log('Listening for new OTP emails...');
+    console.log('Waiting for new OTP email...');
 
-    const maxAttempts = 50; // Maximum number of times to poll
-    const interval = 200;  // Interval between polls in milliseconds
+    const startTime = Date.now(); // Record time after clicking "Send OTP"
+    const maxAttempts = 20;
+    const interval = 1000;
 
-    let attempts = 0;
-
-    while (attempts < maxAttempts) {
-        attempts++;
-
-        // List unread messages
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
         const res = await gmail.users.messages.list({
             userId: 'me',
-            q: 'is:unread',
-            maxResults: 10,
+            q: `subject:OTP${toEmail ? ' to:' + toEmail : ''}`,
+            maxResults: 5,
         });
 
         const messages = res.data.messages || [];
 
-        for (const message of messages) {
+        for (const msg of messages) {
             const email = await gmail.users.messages.get({
                 userId: 'me',
-                id: message.id,
+                id: msg.id,
             });
 
-            const emailBody = email.data.snippet;
-            const otp = extractOtp(emailBody);
+            const internalDate = parseInt(email.data.internalDate);
+            if (internalDate < startTime) {
+                // Skip if email was received before Send OTP was clicked
+                continue;
+            }
 
+            const snippet = email.data.snippet || '';
+            const otp = extractOtp(snippet);
             if (otp) {
                 console.log('Extracted OTP:', otp);
 
-                // Mark the email as read to prevent re-processing
+                // Mark as read
                 await gmail.users.messages.modify({
                     userId: 'me',
-                    id: message.id,
+                    id: msg.id,
                     resource: {
                         removeLabelIds: ['UNREAD'],
                     },
@@ -65,11 +58,10 @@ async function listenForOtp(auth) {
             }
         }
 
-        // Wait before checking again
         await sleep(interval);
     }
 
-    console.log('OTP email not received within the expected time.');
+    console.log('OTP email not received in time.');
     return null;
 }
 
